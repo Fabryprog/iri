@@ -1,5 +1,11 @@
 # GraalVM Instructions
 
+## Clone this repo
+
+```
+git clone -b iri-native https://github.com/Fabryprog/iri.git
+```
+
 ## Install JDK 8
 
 ## Create JAR
