@@ -74,12 +74,14 @@ public abstract class BaseIotaConfig implements IotaConfig {
     protected int qSizeNode = Defaults.QUEUE_SIZE;
     protected int cacheSizeBytes = Defaults.CACHE_SIZE_BYTES;
 
-
     //Tip Selection
     protected int maxDepth = Defaults.MAX_DEPTH;
     protected double alpha = Defaults.ALPHA;
     private int maxAnalyzedTransactions = Defaults.MAX_ANALYZED_TXS;
 
+    //Distribuited PoW (Hazelcast)
+    protected boolean distribuitedPow = Defaults.DISTRIBUITED_POW;
+    
     public BaseIotaConfig() {
         //empty constructor
     }
@@ -603,6 +605,17 @@ public abstract class BaseIotaConfig implements IotaConfig {
         this.maxAnalyzedTransactions = maxAnalyzedTransactions;
     }
 
+    @Override
+    public boolean isDistribuitedPoW() {
+        return distribuitedPow;
+    }
+
+    @JsonProperty
+    @Parameter(names = "--distribuited-pow", description = "Distribuited PoW - Hazelcast")
+    protected void setDistribuitedPoW(boolean distribuitedPow) {
+        this.distribuitedPow = distribuitedPow;
+    }
+    
     public interface Defaults {
         //API
         int API_PORT = 14265;
@@ -672,5 +685,7 @@ public abstract class BaseIotaConfig implements IotaConfig {
         int MILESTONE_START_INDEX = 774_805;
         int NUM_KEYS_IN_MILESTONE = 20;
         int MAX_ANALYZED_TXS = 20_000;
+        
+        boolean DISTRIBUITED_POW = false;
     }
 }

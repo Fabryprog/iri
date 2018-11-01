@@ -83,7 +83,7 @@ public class APIIntegrationTests {
             //create node
             iota = new Iota(configuration);
             ixi = new IXI(iota);
-            api = new API(iota, ixi);
+            api = new API(iota, ixi, false);
 
             //init
             try {

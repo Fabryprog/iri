@@ -1,20 +1,21 @@
 package com.iota.iri;
 
-import com.iota.iri.conf.Config;
-import com.iota.iri.conf.ConfigFactory;
-import com.iota.iri.conf.IotaConfig;
-import com.iota.iri.service.API;
-
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+import com.iota.iri.conf.Config;
+import com.iota.iri.conf.ConfigFactory;
+import com.iota.iri.conf.IotaConfig;
+import com.iota.iri.service.API;
 
 /**
  * Main IOTA Reference Implementation starting class.
@@ -23,7 +24,7 @@ public class IRI {
 
     public static final String MAINNET_NAME = "IRI";
     public static final String TESTNET_NAME = "IRI Testnet";
-    public static final String VERSION = "1.5.5";
+    public static final String VERSION = "1.5.5-dpow";
 
     public static void main(String[] args) throws Exception {
         // Logging is configured first before any references to Logger or LoggerFactory.
@@ -70,9 +71,13 @@ public class IRI {
 
             iota = new Iota(config);
             ixi = new IXI(iota);
-            api = new API(iota, ixi);
+            api = new API(iota, ixi, true); //TODO
             shutdownHook();
-
+            //TODO if
+            com.hazelcast.config.Config hzConfig = new com.hazelcast.config.Config();
+            hzConfig.setInstanceName("IRI");
+            Hazelcast.newHazelcastInstance(hzConfig);
+            
             if (config.isExport()) {
                 File exportDir = new File("export");
                 if (!exportDir.exists()) {

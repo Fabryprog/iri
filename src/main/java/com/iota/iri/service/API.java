@@ -1,25 +1,90 @@
 package com.iota.iri.service;
 
+import static io.undertow.Handlers.path;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xnio.channels.StreamSinkChannel;
+import org.xnio.streams.ChannelInputStream;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.iota.iri.*;
+import com.hazelcast.console.Echo;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IExecutorService;
+import com.iota.iri.BundleValidator;
+import com.iota.iri.IRI;
+import com.iota.iri.IXI;
+import com.iota.iri.Iota;
+import com.iota.iri.Snapshot;
 import com.iota.iri.conf.APIConfig;
 import com.iota.iri.conf.ConsensusConfig;
 import com.iota.iri.controllers.AddressViewModel;
 import com.iota.iri.controllers.BundleViewModel;
 import com.iota.iri.controllers.TagViewModel;
 import com.iota.iri.controllers.TransactionViewModel;
+import com.iota.iri.dpow.DistribuitedPOWTask;
 import com.iota.iri.hash.Curl;
 import com.iota.iri.hash.PearlDiver;
 import com.iota.iri.hash.Sponge;
 import com.iota.iri.hash.SpongeFactory;
 import com.iota.iri.model.Hash;
 import com.iota.iri.network.Neighbor;
-import com.iota.iri.service.dto.*;
+import com.iota.iri.service.dto.AbstractResponse;
+import com.iota.iri.service.dto.AccessLimitedResponse;
+import com.iota.iri.service.dto.AddedNeighborsResponse;
+import com.iota.iri.service.dto.AttachToTangleResponse;
+import com.iota.iri.service.dto.CheckConsistency;
+import com.iota.iri.service.dto.ErrorResponse;
+import com.iota.iri.service.dto.ExceptionResponse;
+import com.iota.iri.service.dto.FindTransactionsResponse;
+import com.iota.iri.service.dto.GetBalancesResponse;
+import com.iota.iri.service.dto.GetInclusionStatesResponse;
+import com.iota.iri.service.dto.GetNeighborsResponse;
+import com.iota.iri.service.dto.GetNodeInfoResponse;
+import com.iota.iri.service.dto.GetTipsResponse;
+import com.iota.iri.service.dto.GetTransactionsToApproveResponse;
+import com.iota.iri.service.dto.GetTrytesResponse;
+import com.iota.iri.service.dto.RemoveNeighborsResponse;
+import com.iota.iri.service.dto.wereAddressesSpentFrom;
 import com.iota.iri.service.tipselection.impl.WalkValidatorImpl;
 import com.iota.iri.utils.Converter;
 import com.iota.iri.utils.IotaIOUtils;
 import com.iota.iri.utils.MapIdentityManager;
+
 import io.undertow.Undertow;
 import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.security.api.AuthenticationMode;
@@ -31,29 +96,12 @@ import io.undertow.security.idm.IdentityManager;
 import io.undertow.security.impl.BasicAuthenticationMechanism;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.util.*;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xnio.channels.StreamSinkChannel;
-import org.xnio.streams.ChannelInputStream;
-
-import java.io.*;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static io.undertow.Handlers.path;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
+import io.undertow.util.HttpString;
+import io.undertow.util.Methods;
+import io.undertow.util.MimeMappings;
+import io.undertow.util.StatusCodes;
 
 @SuppressWarnings("unchecked")
 public class API {
@@ -74,9 +122,9 @@ public class API {
     private Pattern trytesPattern = Pattern.compile("[9A-Z]*");
 
     private final static int HASH_SIZE = 81;
-    private final static int TRYTES_SIZE = 2673;
+    public final static int TRYTES_SIZE = 2673;
 
-    private final static long MAX_TIMESTAMP_VALUE = (long) (Math.pow(3, 27) - 1) / 2; // max positive 27-trits value
+    public final static long MAX_TIMESTAMP_VALUE = (long) (Math.pow(3, 27) - 1) / 2; // max positive 27-trits value
 
     private final int maxFindTxs;
     private final int maxRequestList;
@@ -92,8 +140,10 @@ public class API {
     private final static char ZERO_LENGTH_ALLOWED = 'Y';
     private final static char ZERO_LENGTH_NOT_ALLOWED = 'N';
     private Iota instance;
+    
+    private boolean distribuitedPoW;
 
-    public API(Iota instance, IXI ixi) {
+    public API(Iota instance, IXI ixi, boolean distribuitedPoW) {
         this.instance = instance;
         this.ixi = ixi;
         APIConfig configuration = instance.configuration;
@@ -103,7 +153,8 @@ public class API {
         maxBodyLength = configuration.getMaxBodyLength();
         testNet = configuration.isTestnet();
         milestoneStartIndex = ((ConsensusConfig) configuration).getMilestoneStartIndex();
-
+        this.distribuitedPoW = distribuitedPoW;
+        
         previousEpochsSpentAddresses = new ConcurrentHashMap<>();
     }
 
@@ -1061,69 +1112,85 @@ public class API {
       **/
     public synchronized List<String> attachToTangleStatement(final Hash trunkTransaction, final Hash branchTransaction,
                                                                   final int minWeightMagnitude, final List<String> trytes) {
-        final List<TransactionViewModel> transactionViewModels = new LinkedList<>();
+        List<String> elements = new LinkedList<>();
 
-        Hash prevTransaction = null;
-        pearlDiver = new PearlDiver();
-
-        byte[] transactionTrits = Converter.allocateTritsForTrytes(TRYTES_SIZE);
-
-        for (final String tryte : trytes) {
-            long startTime = System.nanoTime();
-            long timestamp = System.currentTimeMillis();
-            try {
-                Converter.trits(tryte, transactionTrits, 0);
-                //branch and trunk
-                System.arraycopy((prevTransaction == null ? trunkTransaction : prevTransaction).trits(), 0,
-                        transactionTrits, TransactionViewModel.TRUNK_TRANSACTION_TRINARY_OFFSET,
-                        TransactionViewModel.TRUNK_TRANSACTION_TRINARY_SIZE);
-                System.arraycopy((prevTransaction == null ? branchTransaction : trunkTransaction).trits(), 0,
-                        transactionTrits, TransactionViewModel.BRANCH_TRANSACTION_TRINARY_OFFSET,
-                        TransactionViewModel.BRANCH_TRANSACTION_TRINARY_SIZE);
-
-                //attachment fields: tag and timestamps
-                //tag - copy the obsolete tag to the attachment tag field only if tag isn't set.
-                if(IntStream.range(TransactionViewModel.TAG_TRINARY_OFFSET, TransactionViewModel.TAG_TRINARY_OFFSET + TransactionViewModel.TAG_TRINARY_SIZE).allMatch(idx -> transactionTrits[idx]  == ((byte) 0))) {
-                    System.arraycopy(transactionTrits, TransactionViewModel.OBSOLETE_TAG_TRINARY_OFFSET,
-                    transactionTrits, TransactionViewModel.TAG_TRINARY_OFFSET,
-                    TransactionViewModel.TAG_TRINARY_SIZE);
-                }
-
-                Converter.copyTrits(timestamp,transactionTrits,TransactionViewModel.ATTACHMENT_TIMESTAMP_TRINARY_OFFSET,
-                        TransactionViewModel.ATTACHMENT_TIMESTAMP_TRINARY_SIZE);
-                Converter.copyTrits(0,transactionTrits,TransactionViewModel.ATTACHMENT_TIMESTAMP_LOWER_BOUND_TRINARY_OFFSET,
-                        TransactionViewModel.ATTACHMENT_TIMESTAMP_LOWER_BOUND_TRINARY_SIZE);
-                Converter.copyTrits(MAX_TIMESTAMP_VALUE,transactionTrits,TransactionViewModel.ATTACHMENT_TIMESTAMP_UPPER_BOUND_TRINARY_OFFSET,
-                        TransactionViewModel.ATTACHMENT_TIMESTAMP_UPPER_BOUND_TRINARY_SIZE);
-
-                if (!pearlDiver.search(transactionTrits, minWeightMagnitude, 0)) {
-                    transactionViewModels.clear();
-                    break;
-                }
-                //validate PoW - throws exception if invalid
-                final TransactionViewModel transactionViewModel = instance.transactionValidator.validateTrits(transactionTrits, instance.transactionValidator.getMinWeightMagnitude());
-
-                transactionViewModels.add(transactionViewModel);
-                prevTransaction = transactionViewModel.getHash();
-            } finally {
-                API.incEllapsedTime_PoW(System.nanoTime() - startTime);
-                API.incCounter_PoW();
-                if ( ( API.getCounter_PoW() % 100) == 0 ) {
-                    String sb = "Last 100 PoW consumed " +
-                            API.getEllapsedTime_PoW() / 1000000000L +
-                            " seconds processing time.";
-                    log.info(sb);
-                    counter_PoW = 0;
-                    ellapsedTime_PoW = 0L;
-                }
-            }
-        }
-
-        final List<String> elements = new LinkedList<>();
-        for (int i = transactionViewModels.size(); i-- > 0; ) {
-            elements.add(Converter.trytes(transactionViewModels.get(i).trits()));
-        }
-        return elements;
+        //TODO
+    	if(true) {
+    		HazelcastInstance hz = Hazelcast.getHazelcastInstanceByName("IRI");
+    	    IExecutorService executorService = hz.getExecutorService("default");
+    	    Future<List<String>> future = executorService.submit( new DistribuitedPOWTask(instance.transactionValidator, trunkTransaction, branchTransaction, minWeightMagnitude, trytes) );
+    	      //while it is executing, do some useful stuff
+    	      //when ready, get the result of your execution
+    	    try {
+				elements = future.get();
+			} catch (InterruptedException | ExecutionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	} else {
+	        final List<TransactionViewModel> transactionViewModels = new LinkedList<>();
+	
+	        Hash prevTransaction = null;
+	        pearlDiver = new PearlDiver();
+	
+	        byte[] transactionTrits = Converter.allocateTritsForTrytes(TRYTES_SIZE);
+	
+	        for (final String tryte : trytes) {
+	            long startTime = System.nanoTime();
+	            long timestamp = System.currentTimeMillis();
+	            try {
+	                Converter.trits(tryte, transactionTrits, 0);
+	                //branch and trunk
+	                System.arraycopy((prevTransaction == null ? trunkTransaction : prevTransaction).trits(), 0,
+	                        transactionTrits, TransactionViewModel.TRUNK_TRANSACTION_TRINARY_OFFSET,
+	                        TransactionViewModel.TRUNK_TRANSACTION_TRINARY_SIZE);
+	                System.arraycopy((prevTransaction == null ? branchTransaction : trunkTransaction).trits(), 0,
+	                        transactionTrits, TransactionViewModel.BRANCH_TRANSACTION_TRINARY_OFFSET,
+	                        TransactionViewModel.BRANCH_TRANSACTION_TRINARY_SIZE);
+	
+	                //attachment fields: tag and timestamps
+	                //tag - copy the obsolete tag to the attachment tag field only if tag isn't set.
+	                if(IntStream.range(TransactionViewModel.TAG_TRINARY_OFFSET, TransactionViewModel.TAG_TRINARY_OFFSET + TransactionViewModel.TAG_TRINARY_SIZE).allMatch(idx -> transactionTrits[idx]  == ((byte) 0))) {
+	                    System.arraycopy(transactionTrits, TransactionViewModel.OBSOLETE_TAG_TRINARY_OFFSET,
+	                    transactionTrits, TransactionViewModel.TAG_TRINARY_OFFSET,
+	                    TransactionViewModel.TAG_TRINARY_SIZE);
+	                }
+	
+	                Converter.copyTrits(timestamp,transactionTrits,TransactionViewModel.ATTACHMENT_TIMESTAMP_TRINARY_OFFSET,
+	                        TransactionViewModel.ATTACHMENT_TIMESTAMP_TRINARY_SIZE);
+	                Converter.copyTrits(0,transactionTrits,TransactionViewModel.ATTACHMENT_TIMESTAMP_LOWER_BOUND_TRINARY_OFFSET,
+	                        TransactionViewModel.ATTACHMENT_TIMESTAMP_LOWER_BOUND_TRINARY_SIZE);
+	                Converter.copyTrits(MAX_TIMESTAMP_VALUE,transactionTrits,TransactionViewModel.ATTACHMENT_TIMESTAMP_UPPER_BOUND_TRINARY_OFFSET,
+	                        TransactionViewModel.ATTACHMENT_TIMESTAMP_UPPER_BOUND_TRINARY_SIZE);
+	
+	                if (!pearlDiver.search(transactionTrits, minWeightMagnitude, 0)) {
+	                    transactionViewModels.clear();
+	                    break;
+	                }
+	                //validate PoW - throws exception if invalid
+	                final TransactionViewModel transactionViewModel = instance.transactionValidator.validateTrits(transactionTrits, instance.transactionValidator.getMinWeightMagnitude());
+	
+	                transactionViewModels.add(transactionViewModel);
+	                prevTransaction = transactionViewModel.getHash();
+	            } finally {
+	                API.incEllapsedTime_PoW(System.nanoTime() - startTime);
+	                API.incCounter_PoW();
+	                if ( ( API.getCounter_PoW() % 100) == 0 ) {
+	                    String sb = "Last 100 PoW consumed " +
+	                            API.getEllapsedTime_PoW() / 1000000000L +
+	                            " seconds processing time.";
+	                    log.info(sb);
+	                    counter_PoW = 0;
+	                    ellapsedTime_PoW = 0L;
+	                }
+	            }
+	        }
+	
+	        for (int i = transactionViewModels.size(); i-- > 0; ) {
+	            elements.add(Converter.trytes(transactionViewModels.get(i).trits()));
+	        }
+    	}
+    	return elements;
     }
 
     /**

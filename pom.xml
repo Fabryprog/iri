@@ -5,7 +5,7 @@
 
     <groupId>com.iota</groupId>
     <artifactId>iri</artifactId>
-    <version>1.5.5</version>
+    <version>1.5.5-dpow</version>
 
     <name>IRI</name>
     <description>IOTA Reference Implementation</description>
@@ -176,6 +176,14 @@
             <artifactId>jcommander</artifactId>
             <version>1.72</version>
         </dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.hazelcast/hazelcast -->
+		<dependency>
+		    <groupId>com.hazelcast</groupId>
+		    <artifactId>hazelcast</artifactId>
+		    <version>3.11</version>
+		</dependency>
+
 
     </dependencies>
 

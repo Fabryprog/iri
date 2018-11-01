@@ -55,7 +55,7 @@ public class NodeIntegrationTests {
             iotaNodes[i] = newNode(i, folders[i*2], folders[i*2+1]);
             ixi[i] = new IXI(iotaNodes[i]);
             ixi[i].init(IXIConfig.IXI_DIR);
-            api[i] = new API(iotaNodes[i], ixi[i]);
+            api[i] = new API(iotaNodes[i], ixi[i], false);
             api[i].init();
         }
         Node.uri("udp://localhost:14701").ifPresent(uri -> iotaNodes[0].node.addNeighbor(iotaNodes[0].node.newNeighbor(uri, true)));

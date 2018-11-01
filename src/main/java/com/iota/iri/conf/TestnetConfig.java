@@ -18,7 +18,7 @@ public class TestnetConfig extends BaseIotaConfig {
     protected int numberOfKeysInMilestone = Defaults.KEYS_IN_MILESTONE;
     protected int transactionPacketSize = Defaults.PACKET_SIZE;
     protected int requestHashSize = Defaults.REQUEST_HASH_SIZE;
-
+    
     public TestnetConfig() {
         super();
         dbPath = Defaults.DB_PATH;
@@ -171,5 +171,6 @@ public class TestnetConfig extends BaseIotaConfig {
         int PACKET_SIZE = 1653;
         String DB_PATH = "testnetdb";
         String DB_LOG_PATH = "testnetdb.log";
+        boolean DISTRIBUITED_POW = false;
     }
 }
