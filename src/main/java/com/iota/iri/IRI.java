@@ -76,11 +76,11 @@ public class IRI {
             if(config.isDistribuitedPoW() && config.getServerPow() != null) {
                 log.info("<<< D-PoW. Connectiong to {}", config.getServerPow());
 
-            	initHazelcastCluster(config.getServerPow());
+            	initHazelcastCluster(null, config.getServerPow());
             } else {
             	if(config.isDistribuitedPoW()) {
             		if(config.getPublicAddressPoW() != null) {
-            			initHazelcastCluster(config.getPublicAddressPoW());
+            			initHazelcastCluster(config.getPublicAddressPoW(), null);
             		} else {
             			//TODO exception
             		}
@@ -189,7 +189,7 @@ public class IRI {
             return null;
         }
         
-        private static void initHazelcastCluster(String publicAddress) {
+        private static void initHazelcastCluster(String publicAddress, String serverIRI) {
         	com.hazelcast.config.Config config = new com.hazelcast.config.Config();
             config.setInstanceName("IRI");
             config.setProperty("hazelcast.icmp.timeout", "5000");
@@ -201,13 +201,18 @@ public class IRI {
             config.setGroupConfig(g);
             
             NetworkConfig network = new NetworkConfig();
-            network.setPublicAddress(publicAddress);
+            if(publicAddress != null) {
+            	network.setPublicAddress(publicAddress);
+            }
             network.setPort(5701);
 			network.setPortAutoIncrement(true);
 			network.setPortCount(100);
             
             JoinConfig join = network.getJoin();
             join.getMulticastConfig().setEnabled(false);
+            if(serverIRI != null) {
+            	join.getTcpIpConfig().addMember(serverIRI).setEnabled(true);
+            }
             join.getTcpIpConfig().setEnabled(true);
             
             network.setJoin(join);
