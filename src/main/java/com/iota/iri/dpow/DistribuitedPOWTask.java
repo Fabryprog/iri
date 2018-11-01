@@ -64,7 +64,6 @@ public class DistribuitedPOWTask implements Callable<List<String>>, Serializable
 		byte[] transactionTrits = Converter.allocateTritsForTrytes(API.TRYTES_SIZE);
 
 		for (final String tryte : trytes) {
-			long startTime = System.nanoTime();
 			long timestamp = System.currentTimeMillis();
 			try {
 				Converter.trits(tryte, transactionTrits, 0);

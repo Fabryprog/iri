@@ -50,6 +50,8 @@ public interface APIConfig extends Config {
     String getRemoteAuth();
     
     boolean isDistribuitedPoW();
+    
+    public String getServerPow();
 
     interface Descriptions {
         String PORT = "The port that will be used by the API.";

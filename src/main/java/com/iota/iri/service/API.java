@@ -1114,8 +1114,7 @@ public class API {
                                                                   final int minWeightMagnitude, final List<String> trytes) {
         List<String> elements = new LinkedList<>();
 
-        //TODO
-    	if(true) {
+    	if(distribuitedPoW) {
     		HazelcastInstance hz = Hazelcast.getHazelcastInstanceByName("IRI");
     	    IExecutorService executorService = hz.getExecutorService("default");
     	    Future<List<String>> future = executorService.submit( new DistribuitedPOWTask(instance.transactionValidator, trunkTransaction, branchTransaction, minWeightMagnitude, trytes) );

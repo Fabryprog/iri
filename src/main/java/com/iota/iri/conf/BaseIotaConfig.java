@@ -80,7 +80,8 @@ public abstract class BaseIotaConfig implements IotaConfig {
     private int maxAnalyzedTransactions = Defaults.MAX_ANALYZED_TXS;
 
     //Distribuited PoW (Hazelcast)
-    protected boolean distribuitedPow = Defaults.DISTRIBUITED_POW;
+    protected boolean distribuitedPoW = Defaults.DISTRIBUITED_POW;
+    protected String serverPoW = null;
     
     public BaseIotaConfig() {
         //empty constructor
@@ -607,13 +608,24 @@ public abstract class BaseIotaConfig implements IotaConfig {
 
     @Override
     public boolean isDistribuitedPoW() {
-        return distribuitedPow;
+        return distribuitedPoW;
     }
 
     @JsonProperty
     @Parameter(names = "--distribuited-pow", description = "Distribuited PoW - Hazelcast")
-    protected void setDistribuitedPoW(boolean distribuitedPow) {
-        this.distribuitedPow = distribuitedPow;
+    protected void setDistribuitedPoW(boolean distribuitedPoW) {
+        this.distribuitedPoW = distribuitedPoW;
+    }
+    
+    @Override
+    public String getServerPow() {
+        return serverPoW;
+    }
+
+    @JsonProperty
+    @Parameter(names = "--server-pow", description = "Server to Delegate PoW")
+    protected void setServerPow(String serverPoW) {
+        this.serverPoW = serverPoW;
     }
     
     public interface Defaults {

@@ -73,43 +73,47 @@ public class IRI {
             IotaConfig config = createConfiguration(args);
             log.info("Welcome to {} {}", config.isTestnet() ? TESTNET_NAME : MAINNET_NAME, VERSION);
 
-            iota = new Iota(config);
-            ixi = new IXI(iota);
-            api = new API(iota, ixi, true); //TODO
-            shutdownHook();
-            //TODO if
-            initHazelcastCluster("fabryprog-iota.eye.rs");
-            
-            if (config.isExport()) {
-                File exportDir = new File("export");
-                if (!exportDir.exists()) {
-                    log.info("Create directory 'export'");
-                    try {
-                        exportDir.mkdir();
-                    } catch (SecurityException e) {
-                        log.error("Could not create directory", e);
-                    }
-                }
-                exportDir = new File("export-solid");
-                if (!exportDir.exists()) {
-                    log.info("Create directory 'export-solid'");
-                    try {
-                        exportDir.mkdir();
-                    } catch (SecurityException e) {
-                        log.error("Could not create directory", e);
-                    }
-                }
-            }
+            if(config.isDistribuitedPoW() && config.getServerPow() != null) {
+                log.info("<<< D-PoW. Connectiong to {}", config.getServerPow());
 
-            try {
-                iota.init();
-                api.init();
-                //TODO redundant parameter but we will touch this when we refactor IXI
-                ixi.init(config.getIxiDir());
-                log.info("IOTA Node initialised correctly.");
-            } catch (Exception e) {
-                log.error("Exception during IOTA node initialisation: ", e);
-                throw e;
+            	initHazelcastCluster(config.getServerPow());
+            } else {
+	            iota = new Iota(config);
+	            ixi = new IXI(iota);
+	            api = new API(iota, ixi, config.isDistribuitedPoW());
+	            shutdownHook();
+	            
+	            if (config.isExport()) {
+	                File exportDir = new File("export");
+	                if (!exportDir.exists()) {
+	                    log.info("Create directory 'export'");
+	                    try {
+	                        exportDir.mkdir();
+	                    } catch (SecurityException e) {
+	                        log.error("Could not create directory", e);
+	                    }
+	                }
+	                exportDir = new File("export-solid");
+	                if (!exportDir.exists()) {
+	                    log.info("Create directory 'export-solid'");
+	                    try {
+	                        exportDir.mkdir();
+	                    } catch (SecurityException e) {
+	                        log.error("Could not create directory", e);
+	                    }
+	                }
+	            }
+	
+	            try {
+	                iota.init();
+	                api.init();
+	                //TODO redundant parameter but we will touch this when we refactor IXI
+	                ixi.init(config.getIxiDir());
+	                log.info("IOTA Node initialised correctly.");
+	            } catch (Exception e) {
+	                log.error("Exception during IOTA node initialisation: ", e);
+	                throw e;
+	            }
             }
         }
 
