@@ -10,11 +10,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.IntStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.HazelcastInstanceAware;
 import com.iota.iri.TransactionValidatorHelperDPOW;
 import com.iota.iri.controllers.TransactionViewModel;
 import com.iota.iri.hash.PearlDiver;
@@ -26,9 +21,7 @@ import com.iota.iri.utils.Converter;
  * @author Fabrizio Spataro <fabryprog@gmail.com>
  *
  */
-public class DistribuitedPOWTask implements Callable<List<String>>, Serializable, HazelcastInstanceAware {
-    private static final Logger log = LoggerFactory.getLogger(DistribuitedPOWTask.class);
-
+public class DistribuitedPOWTask implements Callable<List<String>>, Serializable {
     private static final long serialVersionUID = 8806321992274553604L;
 
 	private Hash trunkTransaction;
@@ -38,8 +31,6 @@ public class DistribuitedPOWTask implements Callable<List<String>>, Serializable
 	private Long snapshotTimestamp;
 	private List<String> trytes;
 	
-	private transient HazelcastInstance hazelcastInstance;
-
 	private DistribuitedPOWTask() {
 	}
 
@@ -51,11 +42,11 @@ public class DistribuitedPOWTask implements Callable<List<String>>, Serializable
 		this.snapshotTimestamp = snapshotTimestamp;
 		this.trytes = trytes;
 		this.transactionValidatorMinWeightMagnitude = transactionValidatorMinWeightMagnitude;
-		log.info("<<<< INIT DONE! >>>>");
+//		log.info("<<<< INIT DONE! >>>>");
 	}
 
 	public List<String> call() {
-		log.info("<<<< DISTRIBUITED PoW START! >>>>");
+//		log.info("<<<< DISTRIBUITED PoW START! >>>>");
 		long ts = Calendar.getInstance().getTimeInMillis();
 		
 		final List<TransactionViewModel> transactionViewModels = new LinkedList<>();
@@ -115,12 +106,9 @@ public class DistribuitedPOWTask implements Callable<List<String>>, Serializable
 			elements.add(Converter.trytes(transactionViewModels.get(i).trits()));
 		}
 
-		log.info("<<<< DISTRIBUITED PoW END! " + (Calendar.getInstance().getTimeInMillis() - ts) + " ms >>>>");
+//		log.info("<<<< DISTRIBUITED PoW END! " + (Calendar.getInstance().getTimeInMillis() - ts) + " ms >>>>");
 
 		return elements;
 	}
 	
-	public void setHazelcastInstance(HazelcastInstance hazelcastInstance) {
-		this.hazelcastInstance = hazelcastInstance;
-	}
 }
