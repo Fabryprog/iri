@@ -19,7 +19,7 @@ public final class Hash implements Serializable, Indexable, HashId {
 
     public static final Hash NULL_HASH = new Hash(new byte[Curl.HASH_LENGTH]);
 
-    private final Object lock = new Object();
+    private final String lock = new String();
     private ByteSafe byteSafe;
     private TritSafe tritSafe;
 
