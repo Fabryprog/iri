@@ -181,11 +181,11 @@ public class IRI {
         	com.hazelcast.config.Config config = new com.hazelcast.config.Config();
             config.setInstanceName("IRI");
 
-            GroupConfig g = new GroupConfig();
-            g.setName("prova");
-            g.setPassword("prova");
-            
-            config.setGroupConfig(g);
+//            GroupConfig g = new GroupConfig();
+//            g.setName("prova");
+//            g.setPassword("prova");
+//            
+//            config.setGroupConfig(g);
             
             NetworkConfig network = new NetworkConfig();
             network.setPublicAddress(publicAddress);
