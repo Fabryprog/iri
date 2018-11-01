@@ -12,9 +12,10 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public final class Hash implements Serializable, Indexable, HashId {
-
-    public static final int SIZE_IN_TRITS = 243;
-    public static final int SIZE_IN_BYTES = 49;
+	private static final long serialVersionUID = -5626778977648890707L;
+	
+	public static final Integer SIZE_IN_TRITS = 243;
+    public static final Integer SIZE_IN_BYTES = 49;
 
     public static final Hash NULL_HASH = new Hash(new byte[Curl.HASH_LENGTH]);
 
