@@ -1117,7 +1117,7 @@ public class API {
     	if(distribuitedPoW) {
     		HazelcastInstance hz = Hazelcast.getHazelcastInstanceByName("IRI");
     	    IExecutorService executorService = hz.getExecutorService("default");
-    	    Future<List<String>> future = executorService.submit( new DistribuitedPOWTask(instance.transactionValidator, trunkTransaction, branchTransaction, minWeightMagnitude, trytes) );
+    	    Future<List<String>> future = executorService.submit( new DistribuitedPOWTask(trunkTransaction, branchTransaction, Integer.valueOf(minWeightMagnitude), trytes, Integer.valueOf(instance.transactionValidator.getMinWeightMagnitude()), Long.valueOf(instance.transactionValidator.getSnapshotTimestamp())) );
     	      //while it is executing, do some useful stuff
     	      //when ready, get the result of your execution
     	    try {

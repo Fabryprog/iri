@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.HazelcastInstanceAware;
-import com.iota.iri.TransactionValidator;
+import com.iota.iri.TransactionValidatorHelperDPOW;
 import com.iota.iri.controllers.TransactionViewModel;
 import com.iota.iri.hash.PearlDiver;
 import com.iota.iri.model.Hash;
@@ -31,10 +31,11 @@ public class DistribuitedPOWTask implements Callable<List<String>>, Serializable
 
     private static final long serialVersionUID = 8806321992274553604L;
 
-	private TransactionValidator transactionValidator;
 	private Hash trunkTransaction;
 	private Hash branchTransaction;
-	private int minWeightMagnitude;
+	private Integer minWeightMagnitude;
+	private Integer transactionValidatorMinWeightMagnitude;
+	private Long snapshotTimestamp;
 	private List<String> trytes;
 	
 	private transient HazelcastInstance hazelcastInstance;
@@ -42,13 +43,14 @@ public class DistribuitedPOWTask implements Callable<List<String>>, Serializable
 	private DistribuitedPOWTask() {
 	}
 
-	public DistribuitedPOWTask(final TransactionValidator transactionValidator, final Hash trunkTransaction, final Hash branchTransaction, final int minWeightMagnitude,
-			final List<String> trytes) {
+	public DistribuitedPOWTask(final Hash trunkTransaction, final Hash branchTransaction, final Integer minWeightMagnitude,
+			final List<String> trytes, final Integer transactionValidatorMinWeightMagnitude, final Long snapshotTimestamp) {
 		this.trunkTransaction = trunkTransaction;
 		this.branchTransaction = branchTransaction;
 		this.minWeightMagnitude = minWeightMagnitude;
+		this.snapshotTimestamp = snapshotTimestamp;
 		this.trytes = trytes;
-		
+		this.transactionValidatorMinWeightMagnitude = transactionValidatorMinWeightMagnitude;
 		log.info("<<<< INIT DONE! >>>>");
 	}
 
@@ -78,8 +80,7 @@ public class DistribuitedPOWTask implements Callable<List<String>>, Serializable
 				// attachment fields: tag and timestamps
 				// tag - copy the obsolete tag to the attachment tag field only if tag isn't
 				// set.
-				if (IntStream
-						.range(TransactionViewModel.TAG_TRINARY_OFFSET,
+				if (IntStream.range(TransactionViewModel.TAG_TRINARY_OFFSET,
 								TransactionViewModel.TAG_TRINARY_OFFSET + TransactionViewModel.TAG_TRINARY_SIZE)
 						.allMatch(idx -> transactionTrits[idx] == ((byte) 0))) {
 					System.arraycopy(transactionTrits, TransactionViewModel.OBSOLETE_TAG_TRINARY_OFFSET,
@@ -102,9 +103,8 @@ public class DistribuitedPOWTask implements Callable<List<String>>, Serializable
 					break;
 				}
 				// validate PoW - throws exception if invalid
-				final TransactionViewModel transactionViewModel = transactionValidator
-						.validateTrits(transactionTrits, transactionValidator.getMinWeightMagnitude());
-
+				final TransactionViewModel transactionViewModel = new TransactionValidatorHelperDPOW().validateTrits(transactionTrits, transactionValidatorMinWeightMagnitude, snapshotTimestamp);
+				
 				transactionViewModels.add(transactionViewModel);
 				prevTransaction = transactionViewModel.getHash();
 			} catch(Exception e) {} 

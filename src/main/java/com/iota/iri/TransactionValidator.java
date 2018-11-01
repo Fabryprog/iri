@@ -278,4 +278,8 @@ public class TransactionValidator {
             super(message);
         }
     }
+
+	public static long getSnapshotTimestamp() {
+		return snapshotTimestamp;
+	}
 }
