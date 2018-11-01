@@ -180,15 +180,19 @@ public class IRI {
         private static void initHazelcastCluster(String publicAddress) {
         	com.hazelcast.config.Config config = new com.hazelcast.config.Config();
             config.setInstanceName("IRI");
+            config.setProperty("hazelcast.icmp.timeout", "5000");
 
-//            GroupConfig g = new GroupConfig();
-//            g.setName("prova");
-//            g.setPassword("prova");
-//            
-//            config.setGroupConfig(g);
+            GroupConfig g = new GroupConfig();
+            g.setName("prova");
+            g.setPassword("prova");
+            
+            config.setGroupConfig(g);
             
             NetworkConfig network = new NetworkConfig();
             network.setPublicAddress(publicAddress);
+            network.setPort(5701);
+			network.setPortAutoIncrement(true);
+			network.setPortCount(100);
             
             JoinConfig join = network.getJoin();
             join.getMulticastConfig().setEnabled(false);
