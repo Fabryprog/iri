@@ -10,6 +10,10 @@ import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
+import com.hazelcast.config.ExecutorConfig;
+import com.hazelcast.config.GroupConfig;
+import com.hazelcast.config.JoinConfig;
+import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.iota.iri.conf.Config;
@@ -74,9 +78,7 @@ public class IRI {
             api = new API(iota, ixi, true); //TODO
             shutdownHook();
             //TODO if
-            com.hazelcast.config.Config hzConfig = new com.hazelcast.config.Config();
-            hzConfig.setInstanceName("IRI");
-            Hazelcast.newHazelcastInstance(hzConfig);
+            initHazelcastCluster("fabryprog-iota.eye.rs");
             
             if (config.isExport()) {
                 File exportDir = new File("export");
@@ -174,5 +176,32 @@ public class IRI {
             }
             return null;
         }
+        
+        private static void initHazelcastCluster(String publicAddress) {
+        	com.hazelcast.config.Config config = new com.hazelcast.config.Config();
+            config.setInstanceName("IRI");
+
+            GroupConfig g = new GroupConfig();
+            g.setName("prova");
+            g.setPassword("prova");
+            
+            config.setGroupConfig(g);
+            
+            NetworkConfig network = new NetworkConfig();
+            network.setPublicAddress(publicAddress);
+            
+            JoinConfig join = network.getJoin();
+            join.getMulticastConfig().setEnabled(false);
+            join.getTcpIpConfig().setEnabled(true);
+            
+            network.setJoin(join);
+            config.setNetworkConfig(network);
+            
+            ExecutorConfig executorConfig = config.getExecutorConfig("default");
+            executorConfig.setPoolSize(1).setQueueCapacity(10).setStatisticsEnabled(true);
+            
+            Hazelcast.newHazelcastInstance(config);
+        }
+        
     }
 }
