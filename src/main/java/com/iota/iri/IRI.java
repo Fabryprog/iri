@@ -78,6 +78,14 @@ public class IRI {
 
             	initHazelcastCluster(config.getServerPow());
             } else {
+            	if(config.isDistribuitedPoW()) {
+            		if(config.getPublicAddressPoW() != null) {
+            			initHazelcastCluster(config.getPublicAddressPoW());
+            		} else {
+            			//TODO exception
+            		}
+            	}
+            	
 	            iota = new Iota(config);
 	            ixi = new IXI(iota);
 	            api = new API(iota, ixi, config.isDistribuitedPoW());

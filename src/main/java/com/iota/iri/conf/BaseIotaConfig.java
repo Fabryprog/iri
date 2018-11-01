@@ -82,6 +82,7 @@ public abstract class BaseIotaConfig implements IotaConfig {
     //Distribuited PoW (Hazelcast)
     protected boolean distribuitedPoW = Defaults.DISTRIBUITED_POW;
     protected String serverPoW = null;
+    protected String publicAddressPoW = null;
     
     public BaseIotaConfig() {
         //empty constructor
@@ -612,9 +613,20 @@ public abstract class BaseIotaConfig implements IotaConfig {
     }
 
     @JsonProperty
-    @Parameter(names = "--distribuited-pow", description = "Distribuited PoW - Hazelcast")
+    @Parameter(names = "--distribuited-pow", description = "Enable Distribuited PoW")
     protected void setDistribuitedPoW(boolean distribuitedPoW) {
         this.distribuitedPoW = distribuitedPoW;
+    }
+    
+    @Override
+    public String getPublicAddressPoW() {
+        return publicAddressPoW;
+    }
+
+    @JsonProperty
+    @Parameter(names = "--public-address-pow", description = "Public address exposed to worker")
+    protected void setPublicAddressPoW(String publicAddressPoW) {
+        this.publicAddressPoW = publicAddressPoW;
     }
     
     @Override

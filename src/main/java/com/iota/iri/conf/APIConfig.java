@@ -52,7 +52,9 @@ public interface APIConfig extends Config {
     boolean isDistribuitedPoW();
     
     public String getServerPow();
-
+    
+    public String getPublicAddressPoW();
+    
     interface Descriptions {
         String PORT = "The port that will be used by the API.";
         String API_HOST = "The host on which the API will listen to. Set to 0.0.0.0 to accept any host.";
