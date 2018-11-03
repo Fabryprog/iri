@@ -11,6 +11,8 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 public final class Hash implements Serializable, Indexable, HashId {
 	private static final long serialVersionUID = -5626778977648890707L;
 	
@@ -24,21 +26,21 @@ public final class Hash implements Serializable, Indexable, HashId {
     private TritSafe tritSafe;
 
     private final class ByteSafe {
-        private final byte[] bytes;
+        private final Byte[] bytes;
         private final Integer hashcode;
 
         private ByteSafe(byte[] bytes) {
             Objects.requireNonNull(bytes, "ByteSafe is attempted to be initialized with a null byte array");
-            this.bytes = bytes;
+            this.bytes = ArrayUtils.toObject(bytes);
             this.hashcode = Arrays.hashCode(bytes);
         }
     }
 
     private final class TritSafe {
-        private final byte[] trits;
+        private Byte[] trits;
 
         private TritSafe(byte[] trits) {
-            this.trits = Objects.requireNonNull(trits, "TritSafe is attempted to be initialized with a null int array");
+            this.trits = ArrayUtils.toObject(Objects.requireNonNull(trits, "TritSafe is attempted to be initialized with a null int array"));
         }
     }
 
@@ -86,7 +88,11 @@ public final class Hash implements Serializable, Indexable, HashId {
 
     public Hash(final String trytes) {
         this.tritSafe = new TritSafe(new byte[SIZE_IN_TRITS]);
-        Converter.trits(trytes, this.tritSafe.trits, 0);
+        byte[] t = new byte[this.tritSafe.trits.length];
+        
+        Converter.trits(trytes, t, 0);
+        
+        this.tritSafe.trits = ArrayUtils.toObject(t);
     }
 
     private void fullRead(byte[] src) {
@@ -126,7 +132,7 @@ public final class Hash implements Serializable, Indexable, HashId {
                 safe = tritSafe;
             }
         }
-        return safe.trits;
+        return ArrayUtils.toPrimitive(safe.trits);
     }
 
     @Override
@@ -166,7 +172,7 @@ public final class Hash implements Serializable, Indexable, HashId {
                 safe = byteSafe;
             }
         }
-        return safe.bytes;
+        return ArrayUtils.toPrimitive(safe.bytes);
     }
 
 
