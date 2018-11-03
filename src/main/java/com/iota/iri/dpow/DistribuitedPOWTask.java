@@ -42,11 +42,11 @@ public class DistribuitedPOWTask implements Callable<List<String>>, Serializable
 		this.snapshotTimestamp = snapshotTimestamp;
 		this.trytes = trytes;
 		this.transactionValidatorMinWeightMagnitude = transactionValidatorMinWeightMagnitude;
-//		log.info("<<<< INIT DONE! >>>>");
+		System.out.println("<<<< INIT DONE! >>>>");
 	}
 
 	public List<String> call() {
-//		log.info("<<<< DISTRIBUITED PoW START! >>>>");
+		System.out.println("<<<< DISTRIBUITED PoW START! >>>>");
 		long ts = Calendar.getInstance().getTimeInMillis();
 		
 		final List<TransactionViewModel> transactionViewModels = new LinkedList<>();
@@ -98,7 +98,7 @@ public class DistribuitedPOWTask implements Callable<List<String>>, Serializable
 				
 				transactionViewModels.add(transactionViewModel);
 				prevTransaction = transactionViewModel.getHash();
-			} catch(Exception e) {} 
+			} catch(Exception e) {}
 		} //for
 
 		final List<String> elements = new LinkedList<>();
@@ -106,7 +106,7 @@ public class DistribuitedPOWTask implements Callable<List<String>>, Serializable
 			elements.add(Converter.trytes(transactionViewModels.get(i).trits()));
 		}
 
-//		log.info("<<<< DISTRIBUITED PoW END! " + (Calendar.getInstance().getTimeInMillis() - ts) + " ms >>>>");
+		System.out.println("<<<< DISTRIBUITED PoW END! " + (Calendar.getInstance().getTimeInMillis() - ts) + " ms >>>>");
 
 		return elements;
 	}

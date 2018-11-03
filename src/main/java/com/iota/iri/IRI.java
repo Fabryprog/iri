@@ -211,7 +211,7 @@ public class IRI {
             JoinConfig join = network.getJoin();
             join.getMulticastConfig().setEnabled(false);
             if(serverIRI != null) {
-            	join.getTcpIpConfig().addMember(serverIRI).setEnabled(true);
+            	join.getTcpIpConfig().setRequiredMember(serverIRI).setEnabled(true);
             }
             join.getTcpIpConfig().setEnabled(true);
             
