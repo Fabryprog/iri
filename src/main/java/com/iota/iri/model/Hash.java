@@ -25,8 +25,10 @@ public final class Hash implements Serializable, Indexable, HashId {
     private ByteSafe byteSafe;
     private TritSafe tritSafe;
 
-    private final class ByteSafe {
-        private final Byte[] bytes;
+    private final class ByteSafe implements Serializable {
+    	private static final long serialVersionUID = -2355588169697768116L;
+
+		private final Byte[] bytes;
         private final Integer hashcode;
 
         private ByteSafe(byte[] bytes) {
@@ -36,8 +38,10 @@ public final class Hash implements Serializable, Indexable, HashId {
         }
     }
 
-    private final class TritSafe {
-        private Byte[] trits;
+    private final class TritSafe implements Serializable {
+		private static final long serialVersionUID = -5135400307221688762L;
+
+		private Byte[] trits;
 
         private TritSafe(byte[] trits) {
             this.trits = ArrayUtils.toObject(Objects.requireNonNull(trits, "TritSafe is attempted to be initialized with a null int array"));
@@ -203,4 +207,20 @@ public final class Hash implements Serializable, Indexable, HashId {
         }
         return (int) diff;
     }
+
+	public ByteSafe getByteSafe() {
+		return byteSafe;
+	}
+
+	public void setByteSafe(ByteSafe byteSafe) {
+		this.byteSafe = byteSafe;
+	}
+
+	public TritSafe getTritSafe() {
+		return tritSafe;
+	}
+
+	public void setTritSafe(TritSafe tritSafe) {
+		this.tritSafe = tritSafe;
+	}
 }
