@@ -1,50 +1,44 @@
 package com.iota.iri.model;
 
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Objects;
+
 import com.iota.iri.hash.Curl;
 import com.iota.iri.hash.Sponge;
 import com.iota.iri.hash.SpongeFactory;
 import com.iota.iri.storage.Indexable;
 import com.iota.iri.utils.Converter;
 
-import java.io.Serializable;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Objects;
-
-import org.apache.commons.lang3.ArrayUtils;
-
 public final class Hash implements Serializable, Indexable, HashId {
+
 	private static final long serialVersionUID = -5626778977648890707L;
-	
-	public static final Integer SIZE_IN_TRITS = 243;
-    public static final Integer SIZE_IN_BYTES = 49;
+
+	public static final int SIZE_IN_TRITS = 243;
+    public static final int SIZE_IN_BYTES = 49;
 
     public static final Hash NULL_HASH = new Hash(new byte[Curl.HASH_LENGTH]);
 
-    private final String lock = new String();
+    private final Object lock = new Object();
     private ByteSafe byteSafe;
     private TritSafe tritSafe;
 
-    private final class ByteSafe implements Serializable {
-    	private static final long serialVersionUID = -2355588169697768116L;
-
-		private final Byte[] bytes;
+    private final class ByteSafe {
+        private final byte[] bytes;
         private final Integer hashcode;
 
         private ByteSafe(byte[] bytes) {
             Objects.requireNonNull(bytes, "ByteSafe is attempted to be initialized with a null byte array");
-            this.bytes = ArrayUtils.toObject(bytes);
+            this.bytes = bytes;
             this.hashcode = Arrays.hashCode(bytes);
         }
     }
 
-    private final class TritSafe implements Serializable {
-		private static final long serialVersionUID = -5135400307221688762L;
-
-		private Byte[] trits;
+    private final class TritSafe {
+        private final byte[] trits;
 
         private TritSafe(byte[] trits) {
-            this.trits = ArrayUtils.toObject(Objects.requireNonNull(trits, "TritSafe is attempted to be initialized with a null int array"));
+            this.trits = Objects.requireNonNull(trits, "TritSafe is attempted to be initialized with a null int array");
         }
     }
 
@@ -132,7 +126,7 @@ public final class Hash implements Serializable, Indexable, HashId {
                 safe = tritSafe;
             }
         }
-        return ArrayUtils.toPrimitive(safe.trits);
+        return safe.trits;
     }
 
     @Override
@@ -172,7 +166,7 @@ public final class Hash implements Serializable, Indexable, HashId {
                 safe = byteSafe;
             }
         }
-        return ArrayUtils.toPrimitive(safe.bytes);
+        return safe.bytes;
     }
 
 
@@ -203,20 +197,4 @@ public final class Hash implements Serializable, Indexable, HashId {
         }
         return (int) diff;
     }
-
-	public ByteSafe getByteSafe() {
-		return byteSafe;
-	}
-
-	public void setByteSafe(ByteSafe byteSafe) {
-		this.byteSafe = byteSafe;
-	}
-
-	public TritSafe getTritSafe() {
-		return tritSafe;
-	}
-
-	public void setTritSafe(TritSafe tritSafe) {
-		this.tritSafe = tritSafe;
-	}
 }
