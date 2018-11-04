@@ -3,6 +3,8 @@ package com.iota.iri.utils;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 public class Converter {
 
 	public static final int RADIX = 3;
@@ -99,6 +101,11 @@ public class Converter {
                     destOffset + i * NUMBER_OF_TRITS_IN_A_TRYTE, NUMBER_OF_TRITS_IN_A_TRYTE);
         }
     }
+    
+    public static void trits(final String trytes, Byte[] dest, int destOffset) {
+    	Converter.trits(trytes, ArrayUtils.toPrimitive(dest), destOffset);
+    }
+
 
     public static void copyTrits(final long value, final byte[] destination, final int offset, final int size) {
 

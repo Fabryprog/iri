@@ -92,11 +92,7 @@ public final class Hash implements Serializable, Indexable, HashId {
 
     public Hash(final String trytes) {
         this.tritSafe = new TritSafe(new byte[SIZE_IN_TRITS]);
-        byte[] t = new byte[trytes.length()];
-        
-        Converter.trits(trytes, t, 0);
-        
-        this.tritSafe.trits = ArrayUtils.toObject(t);
+        Converter.trits(trytes, this.tritSafe.trits, 0);
     }
 
     private void fullRead(byte[] src) {
