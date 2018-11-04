@@ -193,6 +193,8 @@ public class IRI {
         	com.hazelcast.config.Config config = new com.hazelcast.config.Config();
             config.setInstanceName("IRI");
             config.setProperty("hazelcast.icmp.timeout", "5000");
+            config.setProperty("hazelcast.max.no.heartbeat.seconds", "10");
+
 
             GroupConfig g = new GroupConfig();
             g.setName("prova");
@@ -219,7 +221,7 @@ public class IRI {
             config.setNetworkConfig(network);
             
             ExecutorConfig executorConfig = config.getExecutorConfig("default");
-            executorConfig.setPoolSize(1).setQueueCapacity(10).setStatisticsEnabled(true);
+            executorConfig.setPoolSize(4).setQueueCapacity(1).setStatisticsEnabled(false);
             
             Hazelcast.newHazelcastInstance(config);
         }
