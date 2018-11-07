@@ -23,8 +23,11 @@ public final class Hash implements Serializable, Indexable, HashId {
     private ByteSafe byteSafe;
     private TritSafe tritSafe;
 
-    private final class ByteSafe {
-        private final byte[] bytes;
+    @SuppressWarnings("unused")
+    private final class ByteSafe implements Serializable {
+		private static final long serialVersionUID = -1897862934475557548L;
+
+		private final byte[] bytes;
         private final Integer hashcode;
 
         private ByteSafe(byte[] bytes) {
@@ -32,16 +35,30 @@ public final class Hash implements Serializable, Indexable, HashId {
             this.bytes = bytes;
             this.hashcode = Arrays.hashCode(bytes);
         }
+
+		public byte[] getBytes() {
+			return bytes;
+		}
+
+		public Integer getHashcode() {
+			return hashcode;
+		}
     }
 
-    private final class TritSafe {
-        private final byte[] trits;
+    @SuppressWarnings("unused")
+    private final class TritSafe implements Serializable {
+		private static final long serialVersionUID = -6278134376932381568L;
+		
+		private final byte[] trits;
 
         private TritSafe(byte[] trits) {
             this.trits = Objects.requireNonNull(trits, "TritSafe is attempted to be initialized with a null int array");
         }
-    }
 
+		public byte[] getTrits() {
+			return trits;
+		}
+    }
 
     public static Hash calculate(SpongeFactory.Mode mode, byte[] trits) {
         return calculate(trits, 0, trits.length, SpongeFactory.create(mode));
