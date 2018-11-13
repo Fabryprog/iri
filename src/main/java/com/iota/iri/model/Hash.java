@@ -24,7 +24,7 @@ public final class Hash implements Serializable, Indexable, HashId {
     private TritSafe tritSafe;
 
     @SuppressWarnings("unused")
-    private final class ByteSafe implements Serializable {
+    private class ByteSafe implements Serializable {
 		private static final long serialVersionUID = -1897862934475557548L;
 
 		private final byte[] bytes;
@@ -46,7 +46,7 @@ public final class Hash implements Serializable, Indexable, HashId {
     }
 
     @SuppressWarnings("unused")
-    private final class TritSafe implements Serializable {
+    private class TritSafe implements Serializable {
 		private static final long serialVersionUID = -6278134376932381568L;
 		
 		private final byte[] trits;
@@ -214,4 +214,20 @@ public final class Hash implements Serializable, Indexable, HashId {
         }
         return (int) diff;
     }
+
+	public ByteSafe getByteSafe() {
+		return byteSafe;
+	}
+
+	public void setByteSafe(ByteSafe byteSafe) {
+		this.byteSafe = byteSafe;
+	}
+
+	public TritSafe getTritSafe() {
+		return tritSafe;
+	}
+
+	public void setTritSafe(TritSafe tritSafe) {
+		this.tritSafe = tritSafe;
+	}
 }
