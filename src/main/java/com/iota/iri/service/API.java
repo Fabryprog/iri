@@ -773,7 +773,7 @@ public class API {
                 instance.milestone.latestSolidSubtangleMilestone, instance.milestone.latestSolidSubtangleMilestoneIndex, instance.milestone.milestoneStartIndex,
                 instance.node.howManyNeighbors(), instance.node.queuedTransactionsSize(),
                 System.currentTimeMillis(), instance.tipsViewModel.size(),
-                instance.transactionRequester.numberOfTransactionsToRequest(), distribuitedPoW, (distribuitedPoW) ? Hazelcast.getHazelcastInstanceByName("IRI").getClientService().getConnectedClients().size() : 0, (distribuitedPoW) ? distribuitedPoWCounter : 0);
+                instance.transactionRequester.numberOfTransactionsToRequest(), distribuitedPoW, (distribuitedPoW) ? Hazelcast.getHazelcastInstanceByName("IRI").getCluster().getMembers().size() : 0, (distribuitedPoW) ? distribuitedPoWCounter : 0);
     }
 
     /**
