@@ -25,12 +25,16 @@ public class GetNodeInfoResponse extends AbstractResponse {
     private long time;
     private int tips;
     private int transactionsToRequest;
+    
+    private boolean dPoWEnabled;
+    private int dPoWWorkers;
+    private int dPoWCount;
 
 	public static AbstractResponse create(String appName, String appVersion, int jreAvailableProcessors, long jreFreeMemory,
 	        String jreVersion, long maxMemory, long totalMemory, Hash latestMilestone, int latestMilestoneIndex,
 	        Hash latestSolidSubtangleMilestone, int latestSolidSubtangleMilestoneIndex, int milestoneStartIndex,
 	        int neighbors, int packetsQueueSize,
-	        long currentTimeMillis, int tips, int numberOfTransactionsToRequest) {
+	        long currentTimeMillis, int tips, int numberOfTransactionsToRequest, boolean dPoWEnabled, int dPoWWorkers, int dPoWCount) {
 		final GetNodeInfoResponse res = new GetNodeInfoResponse();
 		res.appName = appName;
 		res.appVersion = appVersion;
@@ -53,6 +57,10 @@ public class GetNodeInfoResponse extends AbstractResponse {
 		res.time = currentTimeMillis;
 		res.tips = tips;
 		res.transactionsToRequest = numberOfTransactionsToRequest;
+		res.dPoWEnabled = dPoWEnabled;
+		res.dPoWWorkers = dPoWWorkers;
+		res.dPoWCount = dPoWCount;
+		
 		return res;
 	}
 
@@ -212,6 +220,18 @@ public class GetNodeInfoResponse extends AbstractResponse {
      */
 	public int getTransactionsToRequest() {
 		return transactionsToRequest;
+	}
+
+	public boolean isdPoWEnabled() {
+		return dPoWEnabled;
+	}
+
+	public int getdPoWWorkers() {
+		return dPoWWorkers;
+	}
+
+	public int getdPoWCount() {
+		return dPoWCount;
 	}
 
 }

@@ -142,6 +142,7 @@ public class API {
     private Iota instance;
     
     private boolean distribuitedPoW;
+    private int distribuitedPoWCounter = 0;
 
     public API(Iota instance, IXI ixi, boolean distribuitedPoW) {
         this.instance = instance;
@@ -772,7 +773,7 @@ public class API {
                 instance.milestone.latestSolidSubtangleMilestone, instance.milestone.latestSolidSubtangleMilestoneIndex, instance.milestone.milestoneStartIndex,
                 instance.node.howManyNeighbors(), instance.node.queuedTransactionsSize(),
                 System.currentTimeMillis(), instance.tipsViewModel.size(),
-                instance.transactionRequester.numberOfTransactionsToRequest());
+                instance.transactionRequester.numberOfTransactionsToRequest(), distribuitedPoW, (distribuitedPoW) ? Hazelcast.getHazelcastInstanceByName("IRI").getClientService().getConnectedClients().size() : 0, (distribuitedPoW) ? distribuitedPoWCounter : 0);
     }
 
     /**
@@ -1115,6 +1116,8 @@ public class API {
         List<String> elements = new LinkedList<>();
 
     	if(distribuitedPoW) {
+    		distribuitedPoWCounter++;
+    		
     		HazelcastInstance hz = Hazelcast.getHazelcastInstanceByName("IRI");
     	    IExecutorService executorService = hz.getExecutorService("default");
     	    Future<List<String>> future = executorService.submit( new DistribuitedPOWTask(trunkTransaction, branchTransaction, Integer.valueOf(minWeightMagnitude), trytes, Integer.valueOf(instance.transactionValidator.getMinWeightMagnitude()), Long.valueOf(instance.transactionValidator.getSnapshotTimestamp())) );
