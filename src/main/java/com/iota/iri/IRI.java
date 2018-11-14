@@ -215,7 +215,6 @@ public class IRI {
             if(serverIRI != null) {
             	join.getTcpIpConfig().setRequiredMember(serverIRI).setEnabled(true);
             }
-            join.getTcpIpConfig().setEnabled(true);
             
             network.setJoin(join);
             config.setNetworkConfig(network);
