@@ -18,6 +18,7 @@ import com.hazelcast.core.Hazelcast;
 import com.iota.iri.conf.Config;
 import com.iota.iri.conf.ConfigFactory;
 import com.iota.iri.conf.IotaConfig;
+import com.iota.iri.dpow.ClientModeHazelcastInstanceReconnectorTask;
 import com.iota.iri.service.API;
 
 /**
@@ -194,7 +195,6 @@ public class IRI {
             config.setProperty("hazelcast.restart.on.max.idle", "true");
             config.setProperty("hazelcast.max.no.heartbeat.seconds", "10");
 
-
             GroupConfig g = new GroupConfig();
             g.setName("prova");
             g.setPassword("prova");
@@ -226,7 +226,11 @@ public class IRI {
             executorConfig.setPoolSize(4).setQueueCapacity(1).setStatisticsEnabled(false);
             
             Hazelcast.newHazelcastInstance(config);
+            
+            if(config.isLiteMember()) {
+	            Thread t = new Thread(new ClientModeHazelcastInstanceReconnectorTask(config));
+	            t.start();
+        	}
         }
-        
     }
 }
