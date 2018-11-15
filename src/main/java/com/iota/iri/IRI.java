@@ -192,7 +192,7 @@ public class IRI {
         private static void initHazelcastCluster(String publicAddress, String serverIRI) {
         	com.hazelcast.config.Config config = new com.hazelcast.config.Config();
             config.setInstanceName("IRI");
-            config.setProperty("hazelcast.icmp.timeout", "5000");
+            config.setProperty("hazelcast.restart.on.max.idle", "true");
             config.setProperty("hazelcast.max.no.heartbeat.seconds", "10");
 
 
@@ -214,6 +214,8 @@ public class IRI {
             join.getMulticastConfig().setEnabled(false);
             if(serverIRI != null) {
             	join.getTcpIpConfig().setRequiredMember(serverIRI).setEnabled(true);
+                //lite
+                config.setLiteMember(true);
             } else {
                 join.getTcpIpConfig().setEnabled(true);
             }
