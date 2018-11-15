@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,7 +42,7 @@ import org.xnio.streams.ChannelInputStream;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.hazelcast.console.Echo;
+import com.hazelcast.cluster.memberselector.MemberSelectors;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
@@ -1120,7 +1121,13 @@ public class API {
     		
     		HazelcastInstance hz = Hazelcast.getHazelcastInstanceByName("IRI");
     	    IExecutorService executorService = hz.getExecutorService("default");
-    	    Future<List<String>> future = executorService.submit( new DistribuitedPOWTask(trunkTransaction, branchTransaction, Integer.valueOf(minWeightMagnitude), trytes, Integer.valueOf(instance.transactionValidator.getMinWeightMagnitude()), Long.valueOf(instance.transactionValidator.getSnapshotTimestamp())) );
+    	    Future<List<String>> future = null;
+    	    DistribuitedPOWTask task = new DistribuitedPOWTask(trunkTransaction, branchTransaction, Integer.valueOf(minWeightMagnitude), trytes, Integer.valueOf(instance.transactionValidator.getMinWeightMagnitude()), Long.valueOf(instance.transactionValidator.getSnapshotTimestamp()));
+    	    try {
+    	    	future = executorService.submit(task, MemberSelectors.LITE_MEMBER_SELECTOR);
+    	    } catch (RejectedExecutionException e) {
+    	    	future = executorService.submit(task);
+			}
     	      //while it is executing, do some useful stuff
     	      //when ready, get the result of your execution
     	    try {

@@ -15,7 +15,6 @@ import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.JoinConfig;
 import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
 import com.iota.iri.conf.Config;
 import com.iota.iri.conf.ConfigFactory;
 import com.iota.iri.conf.IotaConfig;
@@ -216,9 +215,9 @@ public class IRI {
             	join.getTcpIpConfig().setRequiredMember(serverIRI).setEnabled(true);
                 //lite
                 config.setLiteMember(true);
-            } else {
-                join.getTcpIpConfig().setEnabled(true);
             }
+
+            join.getTcpIpConfig().setEnabled(true);
             
             network.setJoin(join);
             config.setNetworkConfig(network);
