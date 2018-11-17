@@ -8,11 +8,11 @@ This improvements enable iri to delegate the Proof of Work tasks.
 
 ### IRI 1.5.5
 
-![](drawio/IRI 1.5.5.png)
+![](drawio/IRI%201.5.5.png)
 
 ### IRI 1.5.5 Distribuited PoW
 
-![](drawio/IRI 1.5.5 DPoW.png)
+![](drawio/IRI%201.5.5%20DPoW.png)
 
 There are two actors:
  - 1 Main server
@@ -45,11 +45,11 @@ The feature is into main iri jar. I added some settings:
 
 ## DPoW Italian Community Test Infrastructure
 
-![](drawio\IRI 1.5.5 DPoW - Test Infrastructure.png)
+![](drawio/IRI%201.5.5%20DPoW%20-%20Test%20Infrastructure.png)
 
 - Main Server:
   - fabryprog-iota.eye.rs
-- Workers
+- Worker
  - 5.189.144.245
  - 5.189.144.245
  - 193.31.23.255
