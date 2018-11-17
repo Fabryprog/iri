@@ -6,11 +6,19 @@ This improvements enable iri to delegate the Proof of Work tasks.
 
 ## The Architecture
 
+### IRI 1.5.5
+
+![](drawio/IRI 1.5.5.png)
+
+### IRI 1.5.5 Distribuited PoW
+
+![](drawio/IRI 1.5.5 DPoW.png)
+
 There are two actors:
- - 1 Main server 
+ - 1 Main server
  - N Worker
 
-All actors are in the same hazelcast cluster. 
+All actors are in the same hazelcast cluster.
 
 Main server execute "attachToTangle" task using Hazelcast Distribuited Task and delegate it into cluster.
 
@@ -27,11 +35,25 @@ The feature is into main iri jar. I added some settings:
  - [Server Side]
    - dpow enable flag
    - public server address
-   - cluster group is
+   - cluster group id
    - cluster password
  - [Client Side]
    - dpow enable flag
    - remote server address
+   - cluster group id
+   - cluster password
+
+## DPoW Italian Community Test Infrastructure
+
+![](drawio\IRI 1.5.5 DPoW - Test Infrastructure.png)
+
+- Main Server:
+  - fabryprog-iota.eye.rs
+- Workers
+ - 5.189.144.245
+ - 5.189.144.245
+ - 193.31.23.255
+ - 193.31.23.255
 
 ## FAQ
 
@@ -48,21 +70,3 @@ Rate is 1 PoW : 1 worker
 Initial tests was good.
 
 Now i am working to hazelcast cluster settings to optimize memory load.
-
-
-## Node cmd line settings
-
-To enable dPoW adding this args:
-
-``` 
---distribuited-pow --public-address-pow fabryprog-iota.eye.rs 
-```
-
-## Worker cmd line settings
-
-Execute IRI only with this args:
-
-```
---distribuited-pow --server-pow fabryprog-iota.eye.rs
-```
-
