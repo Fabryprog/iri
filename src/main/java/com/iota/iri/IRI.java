@@ -18,7 +18,7 @@ import com.hazelcast.core.Hazelcast;
 import com.iota.iri.conf.Config;
 import com.iota.iri.conf.ConfigFactory;
 import com.iota.iri.conf.IotaConfig;
-import com.iota.iri.dpow.ClientModeHazelcastInstanceReconnectorTask;
+import com.iota.iri.dpow.HazelcastInstanceReconnectorTask;
 import com.iota.iri.service.API;
 
 /**
@@ -228,7 +228,7 @@ public class IRI {
             Hazelcast.newHazelcastInstance(config);
             
             if(config.isLiteMember()) {
-	            Thread t = new Thread(new ClientModeHazelcastInstanceReconnectorTask(config));
+	            Thread t = new Thread(new HazelcastInstanceReconnectorTask(config));
 	            t.start();
         	}
         }
