@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1162,7 +1163,8 @@ public class API {
         pearlDiver = new PearlDiver();
 
         byte[] transactionTrits = Converter.allocateTritsForTrytes(TRYTES_SIZE);
-		System.out.println("<<<< START attachToTangleStatement >>>>");
+        System.out.println("<<<< attachToTangleStatement START! >>>>");
+		long ts = Calendar.getInstance().getTimeInMillis();
 
         for (final String tryte : trytes) {
             long startTime = System.nanoTime();
@@ -1220,7 +1222,7 @@ public class API {
             elements.add(Converter.trytes(transactionViewModels.get(i).trits()));
         }
 		
-        System.out.println("<<<< END attachToTangleStatement >>>>");
+		System.out.println("<<<< attachToTangleStatement END! " + (Calendar.getInstance().getTimeInMillis() - ts) + " ms >>>>");
 
 		return elements;
     }
