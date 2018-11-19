@@ -1118,15 +1118,19 @@ public class API {
 
     	if(distribuitedPoW) {
     		distribuitedPoWCounter++;
-    		
+    		Double id = (Math.random() * 1000);
     		HazelcastInstance hz = Hazelcast.getHazelcastInstanceByName("IRI");
     	    IExecutorService executorService = hz.getExecutorService("default");
     	    Future<List<String>> future = null;
     	    DistribuitedPOWTask task = new DistribuitedPOWTask(trunkTransaction, branchTransaction, Integer.valueOf(minWeightMagnitude), trytes, Integer.valueOf(instance.transactionValidator.getMinWeightMagnitude()), Long.valueOf(instance.transactionValidator.getSnapshotTimestamp()));
     	    try {
+    			System.out.println("<<<< SUBMIT TASK " + id + ">>>>");
     	    	future = executorService.submit(task, MemberSelectors.LITE_MEMBER_SELECTOR);
+    			System.out.println("<<<< END TASK " + id + ">>>>");
     	    } catch (RejectedExecutionException e) {
+    			System.out.println("<<<< SUBMIT TASK " + id + ">>>>");
     	    	future = executorService.submit(task);
+    			System.out.println("<<<< END TASK " + id + ">>>>");
 			}
     	      //while it is executing, do some useful stuff
     	      //when ready, get the result of your execution

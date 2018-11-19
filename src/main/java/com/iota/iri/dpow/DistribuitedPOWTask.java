@@ -110,5 +110,5 @@ public class DistribuitedPOWTask implements Callable<List<String>>, Serializable
 
 		return elements;
 	}
-	
+
 }
