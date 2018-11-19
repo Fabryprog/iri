@@ -1112,7 +1112,7 @@ public class API {
       * @param trytes the list of trytes to attach
       * @return trytes the list of transactions in trytes
       **/
-    public synchronized List<String> attachToTangleStatement(final Hash trunkTransaction, final Hash branchTransaction,
+    public List<String> attachToTangleStatement(final Hash trunkTransaction, final Hash branchTransaction,
                                                                   final int minWeightMagnitude, final List<String> trytes) {
         List<String> elements = new LinkedList<>();
 
