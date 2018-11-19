@@ -223,7 +223,7 @@ public class IRI {
             config.setNetworkConfig(network);
             
             ExecutorConfig executorConfig = config.getExecutorConfig("default");
-            executorConfig.setPoolSize(1).setQueueCapacity(10).setStatisticsEnabled(false);
+            executorConfig.setPoolSize(4).setQueueCapacity(10).setStatisticsEnabled(false);
             
             Hazelcast.newHazelcastInstance(config);
             
