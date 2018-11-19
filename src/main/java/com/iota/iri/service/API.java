@@ -1162,6 +1162,7 @@ public class API {
         pearlDiver = new PearlDiver();
 
         byte[] transactionTrits = Converter.allocateTritsForTrytes(TRYTES_SIZE);
+		System.out.println("<<<< START attachToTangleStatement >>>>");
 
         for (final String tryte : trytes) {
             long startTime = System.nanoTime();
@@ -1212,12 +1213,16 @@ public class API {
                     ellapsedTime_PoW = 0L;
                 }
             }
+            
         }
 
         for (int i = transactionViewModels.size(); i-- > 0; ) {
             elements.add(Converter.trytes(transactionViewModels.get(i).trits()));
         }
-    	return elements;
+		
+        System.out.println("<<<< END attachToTangleStatement >>>>");
+
+		return elements;
     }
 
     /**
