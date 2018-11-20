@@ -99,6 +99,8 @@ public class TransactionValidator {
         }
 
         int weightMagnitude = transactionViewModel.weightMagnitude;
+        System.out.println("[" + weightMagnitude + "] [" + minWeightMagnitude + "]");
+        
         if(weightMagnitude < minWeightMagnitude) {
             throw new RuntimeException("Invalid transaction hash");
         }
