@@ -1173,13 +1173,17 @@ public class API {
                 		System.out.println("<<<< END TASK [2] >>>>");
                 	}
                 	try {
-                		byte[] res = future.get();
+                		byte[] transactionTritsResult = future.get();
                 		
-                		if(res == null) {
+                		if(transactionTritsResult == null) {
                 			transactionViewModels.clear();
                 			break;
                 		} else {
-                			System.arraycopy(res, 0, transactionTrits, 0, res.length);
+                        	//validate PoW - throws exception if invalid
+                        	final TransactionViewModel transactionViewModel = instance.transactionValidator.validateTrits(transactionTritsResult, instance.transactionValidator.getMinWeightMagnitude());
+                        	
+                        	transactionViewModels.add(transactionViewModel);
+                        	prevTransaction = transactionViewModel.getHash();
                 		}
                 	} catch (InterruptedException | ExecutionException e) {
                 		e.printStackTrace();
@@ -1189,13 +1193,13 @@ public class API {
             			transactionViewModels.clear();
             			break;
             		}
+                	//validate PoW - throws exception if invalid
+                	final TransactionViewModel transactionViewModel = instance.transactionValidator.validateTrits(transactionTrits, instance.transactionValidator.getMinWeightMagnitude());
+                	
+                	transactionViewModels.add(transactionViewModel);
+                	prevTransaction = transactionViewModel.getHash();
                 }
                     
-                //validate PoW - throws exception if invalid
-                final TransactionViewModel transactionViewModel = instance.transactionValidator.validateTrits(transactionTrits, instance.transactionValidator.getMinWeightMagnitude());
-
-                transactionViewModels.add(transactionViewModel);
-                prevTransaction = transactionViewModel.getHash();
             } finally {
                 API.incEllapsedTime_PoW(System.nanoTime() - startTime);
                 API.incCounter_PoW();
