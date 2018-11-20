@@ -1116,45 +1116,6 @@ public class API {
     
     public synchronized List<String> attachToTangleStatement(final Hash trunkTransaction, final Hash branchTransaction,
             final int minWeightMagnitude, final List<String> trytes) {
-    	if(distribuitedPoW) {
-    		return attachToTangleStatementD(trunkTransaction, branchTransaction, minWeightMagnitude, trytes);
-    	} else {
-    		return attachToTangleStatementS(trunkTransaction, branchTransaction, minWeightMagnitude, trytes);
-    	}
-    }
-    
-    public List<String> attachToTangleStatementD(final Hash trunkTransaction, final Hash branchTransaction,
-            final int minWeightMagnitude, final List<String> trytes) {
-		List<String> elements = new LinkedList<>();
-
-		distribuitedPoWCounter++;
-		Double id = (Math.random() * 1000);
-		HazelcastInstance hz = Hazelcast.getHazelcastInstanceByName("IRI");
-		IExecutorService executorService = hz.getExecutorService("default");
-		Future<List<String>> future = null;
-		DistribuitedPOWTask task = new DistribuitedPOWTask(trunkTransaction, branchTransaction, Integer.valueOf(minWeightMagnitude), trytes, Integer.valueOf(instance.transactionValidator.getMinWeightMagnitude()), Long.valueOf(instance.transactionValidator.getSnapshotTimestamp()));
-		try {
-			System.out.println("<<<< SUBMIT TASK " + id + ">>>>");
-			future = executorService.submit(task, MemberSelectors.LITE_MEMBER_SELECTOR);
-			System.out.println("<<<< END TASK " + id + ">>>>");
-		} catch (RejectedExecutionException e) {
-			System.out.println("<<<< SUBMIT TASK " + id + ">>>>");
-			future = executorService.submit(task);
-			System.out.println("<<<< END TASK " + id + ">>>>");
-		}
-		//while it is executing, do some useful stuff
-		//when ready, get the result of your execution
-		try {
-			elements = future.get();
-		} catch (InterruptedException | ExecutionException e) {
-		// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return elements;
-    };
-  
-    public synchronized List<String> attachToTangleStatementS(final Hash trunkTransaction, final Hash branchTransaction,
-                                                                  final int minWeightMagnitude, final List<String> trytes) {
         List<String> elements = new LinkedList<>();
 
         final List<TransactionViewModel> transactionViewModels = new LinkedList<>();
@@ -1194,10 +1155,40 @@ public class API {
                 Converter.copyTrits(MAX_TIMESTAMP_VALUE,transactionTrits,TransactionViewModel.ATTACHMENT_TIMESTAMP_UPPER_BOUND_TRINARY_OFFSET,
                         TransactionViewModel.ATTACHMENT_TIMESTAMP_UPPER_BOUND_TRINARY_SIZE);
 
-                if (!pearlDiver.search(transactionTrits, minWeightMagnitude, 0)) {
-                    transactionViewModels.clear();
-                    break;
+                //DPOW
+                if(distribuitedPoW) {
+            		distribuitedPoWCounter++;
+                	DistribuitedPOWTask task = new DistribuitedPOWTask(transactionTrits, minWeightMagnitude);
+                	
+            		HazelcastInstance hz = Hazelcast.getHazelcastInstanceByName("IRI");
+            		IExecutorService executorService = hz.getExecutorService("default");
+                	Future<Boolean> future = null;
+                	try {
+                		System.out.println("<<<< SUBMIT TASK >>>>");
+                		future = executorService.submit(task, MemberSelectors.LITE_MEMBER_SELECTOR);
+                		System.out.println("<<<< END TASK >>>>");
+                	} catch (RejectedExecutionException e) {
+                		System.out.println("<<<< SUBMIT TASK >>>>");
+                		future = executorService.submit(task);
+                		System.out.println("<<<< END TASK >>>>");
+                	}
+                	try {
+                		boolean res = future.get();
+                		
+                		if(!res) {
+                			transactionViewModels.clear();
+                			break;
+                		}
+                	} catch (InterruptedException | ExecutionException e) {
+                		e.printStackTrace();
+                	}
+                } else {
+                	if(!pearlDiver.search(transactionTrits, minWeightMagnitude, 0)) {
+            			transactionViewModels.clear();
+            			break;
+            		}
                 }
+                    
                 //validate PoW - throws exception if invalid
                 final TransactionViewModel transactionViewModel = instance.transactionValidator.validateTrits(transactionTrits, instance.transactionValidator.getMinWeightMagnitude());
 
