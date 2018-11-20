@@ -26,7 +26,7 @@ public class DistribuitedPOWTask implements Callable<Boolean>, Serializable {
 	public DistribuitedPOWTask(final byte[] transactionTrits, final Integer minWeightMagnitude) {
 		this.transactionTrits = transactionTrits;
 		this.minWeightMagnitude = minWeightMagnitude;
-		System.out.println("<<<< INIT DONE! >>>>");
+		System.out.println("<<<< INIT DONE! [ minWeightMagnitude = " + this.minWeightMagnitude + " ] >>>>");
 	}
 
 	public Boolean call() {
