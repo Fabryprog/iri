@@ -14,7 +14,7 @@ import com.iota.iri.hash.PearlDiver;
  * @author Fabrizio Spataro <fabryprog@gmail.com>
  *
  */
-public class DistribuitedPOWTask implements Callable<Boolean>, Serializable {
+public class DistribuitedPOWTask implements Callable<byte[]>, Serializable {
     private static final long serialVersionUID = 8806321992274553604L;
 
 	private byte[] transactionTrits;
@@ -29,7 +29,7 @@ public class DistribuitedPOWTask implements Callable<Boolean>, Serializable {
 		System.out.println("<<<< INIT DONE! [ minWeightMagnitude = " + this.minWeightMagnitude + " ] >>>>");
 	}
 
-	public Boolean call() {
+	public byte[] call() {
 		System.out.println("<<<< DISTRIBUITED PoW START! >>>>");
 		long ts = Calendar.getInstance().getTimeInMillis();
 		
@@ -37,8 +37,11 @@ public class DistribuitedPOWTask implements Callable<Boolean>, Serializable {
 		Boolean res = pearlDiver.search(transactionTrits, minWeightMagnitude, 0);
 
 		System.out.println("<<<< DISTRIBUITED PoW END! " + (Calendar.getInstance().getTimeInMillis() - ts) + " ms >>>>");
+		if(!res) {
+			return null;
+		}
 
-		return res;
+		return transactionTrits;
 	}
 
 	public byte[] getTransactionTrits() {

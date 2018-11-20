@@ -1162,7 +1162,7 @@ public class API {
                 	
             		HazelcastInstance hz = Hazelcast.getHazelcastInstanceByName("IRI");
             		IExecutorService executorService = hz.getExecutorService("default");
-                	Future<Boolean> future = null;
+                	Future<byte[]> future = null;
                 	try {
                 		System.out.println("<<<< SUBMIT TASK [1]>>>>");
                 		future = executorService.submit(task, MemberSelectors.LITE_MEMBER_SELECTOR);
@@ -1173,11 +1173,13 @@ public class API {
                 		System.out.println("<<<< END TASK [2] >>>>");
                 	}
                 	try {
-                		boolean res = future.get();
+                		byte[] res = future.get();
                 		
-                		if(!res) {
+                		if(res == null) {
                 			transactionViewModels.clear();
                 			break;
+                		} else {
+                			System.arraycopy(res, 0, transactionTrits, 0, res.length);
                 		}
                 	} catch (InterruptedException | ExecutionException e) {
                 		e.printStackTrace();
