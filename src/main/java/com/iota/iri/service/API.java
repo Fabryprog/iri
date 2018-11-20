@@ -43,10 +43,10 @@ import org.xnio.streams.ChannelInputStream;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.hazelcast.cluster.memberselector.MemberSelectors;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
+import com.hazelcast.core.Member;
 import com.iota.iri.BundleValidator;
 import com.iota.iri.IRI;
 import com.iota.iri.IXI;
@@ -1163,30 +1163,32 @@ public class API {
             		HazelcastInstance hz = Hazelcast.getHazelcastInstanceByName("IRI");
             		IExecutorService executorService = hz.getExecutorService("default");
                 	Future<byte[]> future = null;
+                	byte[] transactionTritsResult = null;
                 	try {
                 		System.out.println("<<<< SUBMIT TASK [1]>>>>");
-                		future = executorService.submit(task, MemberSelectors.LITE_MEMBER_SELECTOR);
-                		System.out.println("<<<< END TASK [1]>>>>");
-                	} catch (RejectedExecutionException e) {
-                		System.out.println("<<<< SUBMIT TASK [2]>>>>");
-                		future = executorService.submit(task);
-                		System.out.println("<<<< END TASK [2] >>>>");
-                	}
-                	try {
-                		byte[] transactionTritsResult = future.get();
+                		Map<Member, Future<byte[]>> m = executorService.submitToAllMembers(task);
                 		
-                		if(transactionTritsResult == null) {
-                			transactionViewModels.clear();
-                			break;
-                		} else {
-                        	//validate PoW - throws exception if invalid
-                        	final TransactionViewModel transactionViewModel = instance.transactionValidator.validateTrits(transactionTritsResult, instance.transactionValidator.getMinWeightMagnitude());
-                        	
-                        	transactionViewModels.add(transactionViewModel);
-                        	prevTransaction = transactionViewModel.getHash();
+                		//TODO all members are going done
+                		while(transactionTritsResult != null) {
+                			for(Future<byte[]> f : m.values()) {
+                				if(f.isDone()) {
+                					transactionTritsResult = f.get();
+                				}
+                			}
                 		}
-                	} catch (InterruptedException | ExecutionException e) {
-                		e.printStackTrace();
+                		System.out.println("<<<< END TASK [1]>>>>");
+                	} catch (RejectedExecutionException | InterruptedException | ExecutionException e) {
+						e.printStackTrace();
+					}
+            		if(transactionTritsResult == null) {
+            			transactionViewModels.clear();
+            			break;
+            		} else {
+                    	//validate PoW - throws exception if invalid
+                    	final TransactionViewModel transactionViewModel = instance.transactionValidator.validateTrits(transactionTritsResult, instance.transactionValidator.getMinWeightMagnitude());
+                    	
+                    	transactionViewModels.add(transactionViewModel);
+                    	prevTransaction = transactionViewModel.getHash();
                 	}
                 } else {
                 	if(!pearlDiver.search(transactionTrits, minWeightMagnitude, 0)) {
