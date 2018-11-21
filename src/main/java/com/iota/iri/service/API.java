@@ -43,6 +43,7 @@ import org.xnio.streams.ChannelInputStream;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.hazelcast.cluster.memberselector.MemberSelectors;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
@@ -1156,43 +1157,49 @@ public class API {
                         TransactionViewModel.ATTACHMENT_TIMESTAMP_UPPER_BOUND_TRINARY_SIZE);
 
                 //DPOW
+                boolean dpow = false;
                 if(distribuitedPoW) {
-            		distribuitedPoWCounter++;
-                	DistribuitedPOWTask task = new DistribuitedPOWTask(transactionTrits, minWeightMagnitude);
-                	
-            		HazelcastInstance hz = Hazelcast.getHazelcastInstanceByName("IRI");
-            		IExecutorService executorService = hz.getExecutorService("default");
-                	Future<byte[]> future = null;
-                	byte[] transactionTritsResult = null;
-                	try {
-                		System.out.println("<<<< SUBMIT TASK [1]>>>>");
-                		Map<Member, Future<byte[]>> m = executorService.submitToAllMembers(task);
-                		
-                		//TODO all members are going done
-                		while(transactionTritsResult == null) {
-                			for(Member member : m.keySet()) { 
-	                			Future<byte[]> f = m.get(member);
-	            				if(f.isDone()) {
-	                        		System.out.println("<<<< DONE FROM "+ member.getUuid() +">>>>");
-	            					transactionTritsResult = f.get();
-	            				}
-                			}
-                		}
-                		System.out.println("<<<< END TASK [1]>>>>");
-                	} catch (RejectedExecutionException | InterruptedException | ExecutionException e) {
-						e.printStackTrace();
-					}
-            		if(transactionTritsResult == null) {
-            			transactionViewModels.clear();
-            			break;
-            		} else {
-                    	//validate PoW - throws exception if invalid
-                    	final TransactionViewModel transactionViewModel = instance.transactionValidator.validateTrits(transactionTritsResult, instance.transactionValidator.getMinWeightMagnitude());
-                    	
-                    	transactionViewModels.add(transactionViewModel);
-                    	prevTransaction = transactionViewModel.getHash();
+                	HazelcastInstance hz = Hazelcast.getHazelcastInstanceByName("IRI");
+                	if(Hazelcast.getHazelcastInstanceByName("IRI").getCluster().getMembers().size() > 1) {
+	                	IExecutorService executorService = hz.getExecutorService("default");
+	                	distribuitedPoWCounter++;
+	                	dpow = true;
+	                	
+	                	DistribuitedPOWTask task = new DistribuitedPOWTask(transactionTrits, minWeightMagnitude);
+	                	Future<byte[]> future = null;
+	                	byte[] transactionTritsResult = null;
+	                	try {
+	                		System.out.println("<<<< SUBMIT TASK [1]>>>>");
+	                		Map<Member, Future<byte[]>> m = executorService.submitToMembers(task, MemberSelectors.LITE_MEMBER_SELECTOR);
+	                		
+	                		//TODO all members are going done
+	                		while(transactionTritsResult == null) {
+	                			for(Member member : m.keySet()) { 
+		                			Future<byte[]> f = m.get(member);
+		            				if(f.isDone()) {
+		                        		System.out.println("<<<< DONE FROM "+ member.getUuid() +">>>>");
+		            					transactionTritsResult = f.get();
+		            				}
+	                			}
+	                		}
+	                		System.out.println("<<<< END TASK [1]>>>>");
+	                	} catch (RejectedExecutionException | InterruptedException | ExecutionException e) {
+							e.printStackTrace();
+						}
+	            		if(transactionTritsResult == null) {
+	            			transactionViewModels.clear();
+	            			break;
+	            		} else {
+	                    	//validate PoW - throws exception if invalid
+	                    	final TransactionViewModel transactionViewModel = instance.transactionValidator.validateTrits(transactionTritsResult, instance.transactionValidator.getMinWeightMagnitude());
+	                    	
+	                    	transactionViewModels.add(transactionViewModel);
+	                    	prevTransaction = transactionViewModel.getHash();
+	                	}
                 	}
-                } else {
+                } 
+                
+                if(!dpow){
                 	if(!pearlDiver.search(transactionTrits, minWeightMagnitude, 0)) {
             			transactionViewModels.clear();
             			break;
@@ -1203,7 +1210,6 @@ public class API {
                 	transactionViewModels.add(transactionViewModel);
                 	prevTransaction = transactionViewModel.getHash();
                 }
-                    
             } finally {
                 API.incEllapsedTime_PoW(System.nanoTime() - startTime);
                 API.incCounter_PoW();
