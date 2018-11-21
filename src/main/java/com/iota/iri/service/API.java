@@ -1182,6 +1182,15 @@ public class API {
 		            				}
 	                			}
 	                		}
+
+	                		//reject all pending task
+                			for(Member member : m.keySet()) { 
+	                			Future<byte[]> f = m.get(member);
+	            				if(!f.isDone()) {
+	            					f.cancel(true);
+	            				}
+                			}
+
 	                		System.out.println("<<<< END TASK [1]>>>>");
 	                	} catch (RejectedExecutionException | InterruptedException | ExecutionException e) {
 							e.printStackTrace();
