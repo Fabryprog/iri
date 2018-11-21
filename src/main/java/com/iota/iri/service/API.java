@@ -1169,11 +1169,13 @@ public class API {
                 		Map<Member, Future<byte[]>> m = executorService.submitToAllMembers(task);
                 		
                 		//TODO all members are going done
-                		while(transactionTritsResult != null) {
-                			for(Future<byte[]> f : m.values()) {
-                				if(f.isDone()) {
-                					transactionTritsResult = f.get();
-                				}
+                		while(transactionTritsResult == null) {
+                			for(Member member : m.keySet()) { 
+	                			Future<byte[]> f = m.get(member);
+	            				if(f.isDone()) {
+	                        		System.out.println("<<<< DONE FROM "+ member.getUuid() +">>>>");
+	            					transactionTritsResult = f.get();
+	            				}
                 			}
                 		}
                 		System.out.println("<<<< END TASK [1]>>>>");

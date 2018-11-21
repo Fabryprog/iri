@@ -5,7 +5,6 @@ package com.iota.iri.dpow;
 
 import java.io.Serializable;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.concurrent.Callable;
 
 import com.iota.iri.hash.PearlDiver;
